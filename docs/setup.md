@@ -9,6 +9,7 @@ This guide walks you through installing everything required to run the **TLP Sys
 | Tool             | Purpose                            |
 |------------------|------------------------------------|
 | **Git**          | Version control                    |
+| **NVM**          | Node Version Manager               |
 | **Node.js + npm**| JavaScript runtime & package manager |
 | **PostgreSQL**   | Relational database                |
 | **VS Code**      | Code editor (optional)             |
@@ -30,29 +31,39 @@ This guide walks you through installing everything required to run the **TLP Sys
 brew install git
 ```
 
-### 3. Install Node.js and npm
+### 3. Install NVM (Node Version Manager)
 
 ```bash
-brew install node
+brew install nvm
 ```
 
-### 4. Install PostgreSQL
+Follow the post-installation instructions to set up your shell environment for NVM.
+
+### 4. Install Node.js using NVM
+
+```bash
+nvm install 22
+nvm use 22
+nvm alias default 22
+```
+
+### 5. Install PostgreSQL
 
 ```bash
 brew install postgresql
 brew services start postgresql
 ```
 
-### 5. Verify Installations
+### 6. Verify Installations
 
 ```bash
-node -v
+node -v  # Should show v22.x.x
 npm -v
 git --version
 psql --version
 ```
 
-### 6. (Optional) Install VS Code
+### 7. Install VS Code
 
 ```bash
 brew install --cask visual-studio-code
@@ -81,7 +92,7 @@ wsl --install
 
 ---
 
-### 3. Install Required Tools Inside WSL
+### 3. Install NVM and Node.js Inside WSL
 
 ```bash
 sudo apt update && sudo apt upgrade -y
@@ -89,21 +100,30 @@ sudo apt update && sudo apt upgrade -y
 # Git
 sudo apt install git -y
 
-# Node.js (via NodeSource)
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt install -y nodejs
+# Install NVM
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
 
-# PostgreSQL
+# Close and reopen terminal, then install Node.js 22
+nvm install 22
+nvm use 22
+nvm alias default 22
+```
+
+---
+
+### 4. Install PostgreSQL
+
+```bash
 sudo apt install postgresql postgresql-contrib -y
 sudo service postgresql start
 ```
 
 ---
 
-### 4. Verify Installations
+### 5. Verify Installations
 
 ```bash
-node -v
+node -v  # Should show v22.x.x
 npm -v
 git --version
 psql --version
@@ -111,7 +131,7 @@ psql --version
 
 ---
 
-### 5. (Optional) Create PostgreSQL User & Database
+### 6. (Optional) Create PostgreSQL User & Database
 
 ```bash
 sudo -u postgres createuser --interactive
@@ -120,7 +140,7 @@ sudo -u postgres createdb tlp_systems_db
 
 ---
 
-### 6. (Optional) Use VS Code with WSL
+### 7. Use VS Code with WSL
 
 Install the **Remote - WSL** extension in VS Code. Then launch your project using:
 

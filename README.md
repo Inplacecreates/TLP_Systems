@@ -17,6 +17,10 @@
 - [API Reference](#api-reference)
 - [Contributing](#contributing)
 - [Documentation](#documentation)
+  - [Setup & Prerequisites](./docs/setup.md)
+  - [Database Schema](./docs/schema.md)
+  - [Workflow Documentation](./docs/workflows.md)
+  - [System Architecture](./docs/architecture.md)
 - [Team](#team)
 - [License](#license)
 
@@ -83,13 +87,14 @@ The **TLP Systems App** streamlines critical business processes through an integ
 |--------------|------------------------------|---------------------------------------|
 | **Frontend** | React.js, Next.js           | UI Framework & Server-Side Rendering  |
 |             | Tailwind CSS                 | Styling & Component Design           |
-| **Backend**  | Node.js, Express.js         | Server Runtime & API Framework       |
+| **Backend**  | Node.js (v22.x), Express.js | Server Runtime & API Framework       |
 | **Database** | PostgreSQL                  | Primary Data Store                   |
 |             | Prisma ORM                   | Database Interface & Migrations      |
 | **Auth**     | Custom RBAC                 | Access Control & Permissions         |
 |             | Firebase Auth (optional)     | Authentication Services             |
 | **Services** | SendGrid/SMTP               | Email Communications                 |
 | **Hosting**  | GCP, Vercel, Railway       | Deployment & Infrastructure         |
+| **DevTools** | NVM                         | Node Version Manager                |
 
 ## 📁 Project Structure
 
@@ -111,7 +116,12 @@ TLP-Systems-App/
 │
 ├── public/             # Static assets
 ├── docs/              # Documentation & diagrams
+│   ├── architecture.md   # System architecture documentation
+│   ├── schema.md         # Database schema documentation
+│   ├── setup.md          # Setup & prerequisites guide
+│   └── workflows.md      # Business workflows documentation
 ├── .env.example       # Environment template
+├── .nvmrc             # Node version configuration
 ├── README.md
 └── LICENSE
 ```
@@ -120,9 +130,28 @@ TLP-Systems-App/
 
 ### Prerequisites
 
-- Node.js installed
+- Git installed
+- NVM (Node Version Manager) installed
+- Node.js v22.x (installed via NVM)
 - PostgreSQL database
-- Git
+- VS Code (recommended)
+
+For detailed setup instructions for different operating systems, see our [Setup & Prerequisites Guide](./docs/setup.md).
+
+### Node Version Setup (NVM)
+
+We recommend using NVM to manage Node.js versions:
+
+```bash
+# Install Node.js v22.x
+nvm install 22
+
+# Use Node.js v22.x
+nvm use 22
+
+# Set as default
+nvm alias default 22
+```
 
 ### Installation Steps
 
@@ -200,10 +229,12 @@ We welcome internal contributions and community ideas!
 
 ## 📚 Documentation
 
-- 📐 [System Architecture](./docs/architecture.md)
-- 🔁 [Workflow Diagrams](./docs/workflows.md)
-- 🧱 [Database Schema](./docs/schema.md)
-- 📊 [Integration Guide](./docs/integration.md)
+Comprehensive documentation is available in the `docs/` directory:
+
+- 📐 [System Architecture](./docs/architecture.md) - Overall system design
+- 🧱 [Database Schema](./docs/schema.md) - Database structure and relationships
+- 🔁 [Workflow Diagrams](./docs/workflows.md) - Business process flows
+- 🧰 [Setup & Prerequisites](./docs/setup.md) - Detailed installation guide
 
 ## 👥 Team
 
