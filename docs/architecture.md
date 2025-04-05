@@ -1,136 +1,230 @@
-# 🏗️ TLP Systems App – Architecture Overview
+# 🏗️ TLP Systems App – System Architecture
 
-This document outlines the **technical architecture** of the **TLP Systems App**, a full-stack custom application designed to streamline operations for The Leo Project. It provides insight into how different layers of the system interact and what technologies power each module.
+This document outlines the system architecture, component interactions, infrastructure setup, and security measures implemented in the TLP Systems App.
+
+## 🌐 System Overview
+
+```mermaid
+graph TB
+    Client[Client Browser/App]
+    FE[Frontend - React/Next.js]
+    API[Backend API - Node/Express]
+    DB[(PostgreSQL Database)]
+    Auth[Authentication Service]
+    Email[Email Service - SendGrid]
+    
+    Client --> FE
+    FE --> API
+    API --> DB
+    API --> Auth
+    API --> Email
+```
+
+## 🧱 Component Architecture
+
+### Frontend Layer
+
+- **Framework**: React.js with Next.js
+- **State Management**: React Context + Hooks
+- **UI Components**: Custom components + Tailwind CSS
+- **API Integration**: Axios/Fetch with typed interfaces
+- **Authentication**: JWT token management
+- **Routing**: Next.js file-based routing
+
+### Backend Layer
+
+- **Runtime**: Node.js v22.x
+- **Framework**: Express.js
+- **ORM**: Prisma
+- **API Style**: RESTful with versioning
+- **Authentication**: Custom RBAC + JWT
+- **Validation**: Express validators
+- **Logging**: Winston/Morgan
+
+### Database Layer
+
+- **Engine**: PostgreSQL
+- **Schema**: Prisma-managed migrations
+- **Backup**: Automated daily snapshots
+- **Scaling**: Connection pooling via PgBouncer
+
+### Service Integration
+
+- **Email**: SendGrid/SMTP integration
+- **File Storage**: Local/Cloud (configurable)
+- **Monitoring**: Custom health checks
+- **Caching**: In-memory + Redis (optional)
+
+## 🏭 Infrastructure Setup
+
+### Development Environment
+
+- Local development using Docker containers
+- Hot-reloading enabled for both FE/BE
+- Local PostgreSQL instance
+- Mock email service for testing
+
+### Staging Environment
+
+- Hosted on Google Cloud Platform
+- Automated deployments via GitHub Actions
+- Staging database with sanitized data
+- Test email delivery sandbox
+
+### Production Environment
+
+- High-availability setup on GCP
+- Load balanced API servers
+- Managed PostgreSQL instance
+- Production-grade email service
+- CDN for static assets
+
+## 🔒 Security Architecture
+
+### Authentication
+
+- JWT-based authentication
+- Secure token storage
+- Password hashing with bcrypt
+- MFA support (optional)
+
+### Authorization
+
+- Role-Based Access Control (RBAC)
+- Resource-level permissions
+- API endpoint protection
+- Data access filtering
+
+### Data Protection
+
+- Data encryption at rest
+- Secure communication (HTTPS)
+- SQL injection prevention
+- XSS protection
+- CSRF tokens
+
+### Audit & Compliance
+
+- Action logging
+- User session tracking
+- Data access logs
+- Error monitoring
+
+## 📈 Scalability & Performance
+
+### Frontend Optimization
+
+- Code splitting
+- Static generation where possible
+- Image optimization
+- Caching strategies
+
+### Backend Scaling
+
+- Horizontal scaling capability
+- Load balancing
+- Rate limiting
+- Connection pooling
+
+### Database Optimization
+
+- Indexed queries
+- Query optimization
+- Connection pooling
+- Regular maintenance
+
+## 🔄 Deployment Architecture
+
+### CI/CD Pipeline
+
+```mermaid
+graph LR
+    Code[Code Push] --> Build[Build]
+    Build --> Test[Tests]
+    Test --> Deploy[Deploy]
+    Deploy --> Monitor[Monitor]
+```
+
+### Deployment Process
+
+1. Code pushed to repository
+2. Automated tests run
+3. Build Docker images
+4. Deploy to staging
+5. Run integration tests
+6. Deploy to production
+7. Health checks
+8. Monitoring alerts setup
+
+### Rollback Strategy
+
+- Automated rollback triggers
+- Version tracking
+- Database migration reversibility
+- State recovery procedures
+
+## 📊 Monitoring & Logging
+
+### System Monitoring
+
+- Application metrics
+- Server resources
+- Database performance
+- API response times
+
+### Error Tracking
+
+- Error logging
+- Stack traces
+- User context
+- Environment data
+
+### Performance Monitoring
+
+- Page load times
+- API latency
+- Database query times
+- Resource usage
+
+### Health Checks
+
+- API endpoints
+- Database connectivity
+- External services
+- System resources
+
+## 🔄 Backup & Recovery
+
+### Database Backups
+
+- Daily automated backups
+- Point-in-time recovery
+- Backup verification
+- Retention policies
+
+### Disaster Recovery
+
+- Recovery procedures
+- Data restoration steps
+- Service continuity plan
+- Incident response
+
+## 📱 Mobile Considerations
+
+### Responsive Design
+
+- Mobile-first approach
+- Progressive enhancement
+- Touch-friendly interfaces
+- Offline capabilities
+
+### Performance
+
+- Minimal bundle size
+- Image optimization
+- Lazy loading
+- Service workers
 
 ---
 
-## 📐 System Layers
-
-The system follows a classic **3-tier architecture**:
-
-1. **Frontend** – User interface (React + Next.js)
-2. **Backend** – API layer and business logic (Node.js + Express)
-3. **Database** – Relational data model (PostgreSQL via Prisma ORM)
-
----
-
-## 🧱 Stack Overview
-
-| Layer         | Technology              | Purpose                                  |
-|--------------|--------------------------|------------------------------------------|
-| Frontend      | React.js + Next.js       | Build views, dashboards, forms, UX flows |
-| Styling       | Tailwind CSS             | Clean, responsive UI design              |
-| Backend       | Express.js (Node.js)     | API endpoints, business rules            |
-| ORM           | Prisma                   | Database abstraction + migrations        |
-| Database      | PostgreSQL               | Primary data store                       |
-| Notifications | SendGrid / SMTP          | Trigger email alerts                     |
-| Auth & Roles  | Custom RBAC              | Control access per module/role           |
-| Hosting       | GCP / Vercel / Railway   | Dev + production environments            |
-
----
-
-## 📂 Folder Structure
-
----
-
-## 🧭 Module Map
-
-### ✅ Leave Management
-- Submit leave → Assign locum → Notify → Approve → Trigger invoice
-- Key Tables: `LeaveRequests`, `LocumCovers`, `Approvals`
-
-### 🧾 Locum Invoicing
-- Post-leave, locum submits invoice → System auto-validates → Finance review
-- Key Tables: `Locums`, `Invoices`, `FinanceRecords`
-
-### 📦 Operational Requests
-- Submit request → Manager approves → Finance logs actual cost
-- Key Tables: `OperationalRequests`, `Approvals`, `FinanceRecords`
-
-### ⚠️ Incident Reports
-- Staff logs incident → Manager adds follow-up → Admin resolution
-- Key Table: `IncidentReports`
-
-### 💰 Finance Records
-- All approved invoices and costs are tracked here for reporting and budgeting
-- Key Table: `FinanceRecords`
-
-### 🔔 Notifications & Logs
-- All key actions trigger role-based email notifications and logs
-- Key Tables: `Notifications`, `AuditLogs`
-
----
-
-## 🧩 API & Integration Points
-
-- `/api/leave`
-- `/api/locum/invoice`
-- `/api/ops/request`
-- `/api/incident`
-- `/api/approvals`
-- Email triggers via SendGrid (or SMTP server)
-- Optional integration with Google Workspace (Docs, Sheets, Calendar)
-
----
-
-## 🔐 Role-Based Access Control
-
-| Role      | Access Capabilities                              |
-|-----------|---------------------------------------------------|
-| Staff     | Submit requests, view own records                |
-| Manager   | Approve leave, ops, incidents in their unit      |
-| Finance   | View, approve, and track finance-related actions |
-| Admin     | System-wide access, audit logs, role config      |
-| Locum     | Submit invoice (external access form/email)      |
-
----
-
-## 📊 Dashboards
-
-Each user role sees a different **dashboard view**, rendered on login:
-
-- **Staff Dashboard**: leave status, personal requests, submission shortcuts
-- **Manager Dashboard**: pending approvals, department activity, ops
-- **Finance Dashboard**: invoices, payments, budget vs actuals
-- **Admin Panel**: access control, logs, data summaries
-
----
-
-## 🗂️ Database Schema Reference
-
-The app follows a **relational model** with foreign key constraints.
-
-- See `docs/dbdiagram-schema.txt` or [dbdiagram.io](https://dbdiagram.io) for a visual ERD.
-- Data is normalized into key tables and lookup references.
-
----
-
-## 📎 Future-Proofing & Scaling
-
-- 📈 Easily extendable modules (training, HR, procurement, etc.)
-- 📊 Google BigQuery or Looker Studio for analytics integration
-- ☁️ Google Cloud SQL and GKE (containerized backend)
-- 🔒 Built-in auditing, permissions, and modular logic per feature
-
----
-
-## 🧪 Testing Strategy
-
-- Unit tests on service and controller logic (Jest or Mocha)
-- API testing with Postman or Thunder Client
-- E2E testing (Playwright/Cypress) planned
-- Manual QA using sample data across modules
-
----
-
-## 🧠 Diagram Links
-
-- 📐 System Architecture → `/docs/system-architecture.puml`
-- 🔁 Workflow Sequence → `/docs/workflow-sequence.puml`
-- 🧱 Database Schema → `/docs/dbdiagram-schema.txt`
-- 🎯 User Stories & Sprints → `/docs/planning.md`
-
----
-
-Built with intention, scaled with integrity, and refined through real use.  
-_This system reflects how people work—and improves how they collaborate._
+This architecture document is maintained by the TLP Systems development team and should be updated as the system evolves.
