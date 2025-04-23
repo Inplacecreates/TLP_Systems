@@ -32,20 +32,26 @@ jobs:
 
       - name: Install Backend Dependencies
         working-directory: ./backend
-        run: |
-          if [ -f package-lock.json ]; then
-            npm ci
-          else
-            npm install
-          fi
+        run: npm ci
 
       - name: Install Frontend Dependencies
         working-directory: ./frontend
+        run: npm ci
+
+      - name: Verify Backend Lock File
+        working-directory: ./backend
         run: |
-          if [ -f package-lock.json ]; then
-            npm ci
-          else
-            npm install
+          if [ ! -f "package-lock.json" ]; then
+            echo "package-lock.json missing in backend directory."
+            exit 1
+          fi
+
+      - name: Verify Frontend Lock File
+        working-directory: ./frontend
+        run: |
+          if [ ! -f "package-lock.json" ]; then
+            echo "package-lock.json missing in frontend directory."
+            exit 1
           fi
 
       - name: Run Backend Linting
