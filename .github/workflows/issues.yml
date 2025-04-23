@@ -62,17 +62,3 @@ jobs:
                 body: `Thanks for opening your first issue @${creator}! The team will review it soon. 🙌`
               });
             }
-
-  notify:
-    name: Notify Team
-    runs-on: ubuntu-latest
-    if: github.event.action == 'opened' || github.event.action == 'reopened'
-
-    steps:
-      - name: Send Slack notification
-        uses: slackapi/slack-github-action@v1.24.0
-        with:
-          channel-id: "issues"
-          slack-message: "New issue opened: ${{ github.event.issue.title }} (${{ github.event.issue.html_url }})"
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
