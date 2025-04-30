@@ -1,4 +1,3 @@
-require('dotenv').config();
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 
@@ -14,8 +13,8 @@ async function main() {
             lastName: 'User',
             role: 'ADMIN',
             department: 'Administration',
+            status: 'ACTIVE',
             contractType: 'PERMANENT',
-            leaveBalance: 30
         },
     });
 
@@ -26,10 +25,24 @@ async function main() {
             password: await bcrypt.hash('user123', 10),
             firstName: 'Regular',
             lastName: 'User',
-            role: 'USER',
+            role: 'EMPLOYEE',
             department: 'General',
+            status: 'ACTIVE',
             contractType: 'PERMANENT',
-            leaveBalance: 30
+        },
+    });
+
+    // Create test supervisor user
+    await prisma.user.create({
+        data: {
+            email: 'supervisor@test.com',
+            password: await bcrypt.hash('super123', 10),
+            firstName: 'Supervisor',
+            lastName: 'User',
+            role: 'SUPERVISOR',
+            department: 'General',
+            status: 'ACTIVE',
+            contractType: 'PERMANENT',
         },
     });
 

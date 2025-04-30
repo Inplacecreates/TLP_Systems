@@ -1,115 +1,174 @@
-generator client {  provider = "prisma-client-js"}datasource db {  provider = "postgresql"  url      = env("DATABASE_URL")}// User/Employee Managementmodel User {  id            String    @id @default(cuid())  email         String    @unique  password      String  firstName     String  middleName    String?  lastName      String  phoneNumber   String?  nationalId    String?   @unique  role          Role      @default(EMPLOYEE)  department    String  hireDate      DateTime  @default(now())  contractType  ContractType @default(PERMANENT)  leaveBalance  Int       @default(0)  status        EmploymentStatus @default(ACTIVE)  createdAt     DateTime  @default(now())  updatedAt     DateTime  @updatedAt  // Relations  leaves        Leave[]  locumShifts   LocumShift[]  incidents     Incident[]  operations    OperationRequest[]  approvals     Approval[]          // Approvals given by this user  notifications Notification[]  auditLogs     AuditLog[]}enum Role {  ADMIN  MANAGER  EMPLOYEE  DOCTOR  NURSE  FINANCE  HR}enum ContractType {  PERMANENT  CASUAL  LOCUM  CONTRACT}enum EmploymentStatus {  ACTIVE  SUSPENDED  LEFT}// Leave Managementmodel Leave {  id                      String    @id @default(cuid())  userId                  String  startDate              DateTime  endDate                DateTime  type                   LeaveType  totalDaysRequested     Int  contactWhileOnLeave    String?  additionalNotes        String?  status                 Status    @default(PENDING)  requestNumber          Int       @default(autoincrement())  createdAt              DateTime  @default(now())  updatedAt              DateTime  @updatedAt  // Relations  user                   User      @relation(fields: [userId], references: [id])  approvals              Approval[]  locumCovers            LocumCover[]}enum LeaveType {  ANNUAL  SICK  MATERNITY  PATERNITY  EMERGENCY  UNPAID}// Locum Managementmodel Locum {  id            String    @id @default(cuid())  firstName     String  middleName    String?  lastName      String  email         String    @unique  phoneNumber   String  idNumber      String    @unique  jobTitle      String  bankDetails   Json  approvalStatus LocumStatus @default(PENDING)  availability   AvailabilityStatus @default(AVAILABLE)  createdAt     DateTime  @default(now())  updatedAt     DateTime  @updatedAt  // Relations  covers        LocumCover[]}enum LocumStatus {  PENDING  ACTIVE  INACTIVE  BLACKLISTED}enum AvailabilityStatus {  AVAILABLE  BUSY  ON_HOLD}model LocumCover {  id              String    @id @default(cuid())  leaveId         String  locumId         String  startDate       DateTime  endDate         DateTime  totalDays       Int  agreedDailyRate Float  invoiceSubmitted Boolean  @default(false)  validationStatus ValidationStatus @default(PENDING)  createdAt       DateTime  @default(now())  updatedAt       DateTime  @updatedAt  // Relations  leave           Leave     @relation(fields: [leaveId], references: [id])  locum           Locum     @relation(fields: [locumId], references: [id])}enum ValidationStatus {  PENDING  VALIDATED  FLAGGED  REJECTED}// Finance Recordsmodel FinanceRecord {  id              String    @id @default(cuid())  employeeId      String?  category        FinanceCategory  amount          Float  date            DateTime  receiptUrl      String?  status          Status    @default(PENDING)  notes           String?  budgetReference String?  createdAt       DateTime  @default(now())  updatedAt       DateTime  @updatedAt  // Relations  employee        User?     @relation(fields: [employeeId], references: [id])  approvals       Approval[]}enum FinanceCategory {  LOCUM  OPERATIONAL  MISCELLANEOUS}// Operation Requestsmodel OperationRequest {  id                  String    @id @default(cuid())  userId              String  itemName            String  urgency             Priority  @default(MEDIUM)  deadlineToPurchase  DateTime?  estimatedPricePerItem Float  estimatedTotalCost    Float  departmentAttachedTo  String  reviewerApprover    String?  actualCost          Float?
-  status              Status    @default(PENDING)
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-
-  // Relations
-  user               User      @relation(fields: [userId], references: [id])
-  approvals          Approval[]
+generator client {
+  provider = "prisma-client-js"
 }
 
-// Incident Reports
-model Incident {
-  id              String    @id @default(cuid())
-  userId          String
-  incidentType    IncidentType
-  description     String
-  dateReported    DateTime
-  status          IncidentStatus @default(OPEN)
-  followUpActions String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  // Relations
-  user            User      @relation(fields: [userId], references: [id])
-  approvals       Approval[]
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-enum IncidentType {
-  SAFETY
-  HR
-  FACILITY
-  OTHER
-}
-
-enum IncidentStatus {
-  OPEN
-  RESOLVED
-  ESCALATED
-}
-
-// Approval System
-model Approval {
+// User Management
+model User {
   id            String    @id @default(cuid())
-  approverId    String
-  requestType   RequestType
-  status        Status    @default(PENDING)
-  approvalDate  DateTime?
-  comments      String?
+  email         String    @unique
+  password      String
+  firstName     String
+  lastName      String
+  phoneNumber   String?
+  role          Role      @default(EMPLOYEE)
+  department    String
+  status        UserStatus    @default(ACTIVE)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
   // Relations
-  approver      User      @relation(fields: [approverId], references: [id])
-  leave         Leave?    @relation(fields: [leaveId], references: [id])
-  finance       FinanceRecord? @relation(fields: [financeId], references: [id])
-  incident      Incident? @relation(fields: [incidentId], references: [id])
-  operation     OperationRequest? @relation(fields: [operationId], references: [id])
+  leaves        Leave[]
+  locumShifts   LocumShift[]
+  incidents     Incident[]
+  operations    OperationRequest[]
+  approvals     Approval[] // Approvals given by this user
+  notifications Notification[]
+  auditLogs     AuditLog[]
+}
+
+// Role Enum
+enum Role {
+  ADMIN
+  EMPLOYEE
+  FINANCE
+  HR
+  SUPERVISOR
+}
+
+// User Status 
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+// Leave Management
+model Leave {
+  id                String      @id @default(cuid())
+  userId            String
+  startDate         DateTime
+  endDate           DateTime
+  type              LeaveType
+  reason            String
+  additionalNotes   String?
+  status            Status      @default(PENDING)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  // Relations
+  user              User        @relation(fields: [userId], references: [id])
+  approvals         Approval[]
+}
+
+enum LeaveType {
+  ANNUAL
+  SICK
+  MATERNITY
+  PATERNITY
+  UNPAID
+}
+
+// Locum Management
+model LocumShift {
+  id                String      @id @default(cuid())
+  userId            String
+  date              DateTime
+  hours             Float
+  rate              Float
+  status            Status      @default(PENDING)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  // Relations
+  user              User        @relation(fields: [userId], references: [id])
+  invoice           Invoice?
+  approvals         Approval[]
+}
+
+model Invoice {
+  id                String      @id @default(cuid())
+  locumShiftId      String      @unique
+  amount            Float
+  status            Status      @default(PENDING)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  // Relations
+  locumShift        LocumShift  @relation(fields: [locumShiftId], references: [id])
+}
+
+// Incident Reports
+model Incident {
+  id                String         @id @default(cuid())
+  userId            String
+  title             String
+  description       String
+  severity          Severity      @default(MEDIUM)
+  status            Status        @default(PENDING)
+  reportedAt        DateTime      @default(now())
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  // Relations
+  user              User           @relation(fields: [userId], references: [id])
+  approvals         Approval[]
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// Operation Requests
+model OperationRequest {
+  id                String        @id @default(cuid())
+  userId            String
+  requestType       String
+  description       String
+  priority          Priority      @default(MEDIUM)
+  status            Status        @default(PENDING)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  // Relations
+  user              User          @relation(fields: [userId], references: [id])
+  approvals         Approval[]
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+// Approval System
+model Approval {
+  id                String          @id @default(cuid())
+  approverId        String
+  status            Status          @default(PENDING)
+  comments          String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  // Relations
+  approver          User            @relation(fields: [approverId], references: [id])
+  leave             Leave?          @relation(fields: [leaveId], references: [id])
+  locumShift        LocumShift?    @relation(fields: [locumShiftId], references: [id])
+  incident          Incident?       @relation(fields: [incidentId], references: [id])
+  operation         OperationRequest? @relation(fields: [operationId], references: [id])
 
   // Optional relation fields
-  leaveId       String?
-  financeId     String?
-  incidentId    String?
-  operationId   String?
-}
-
-enum RequestType {
-  LEAVE
-  FINANCE
-  INCIDENT
-  OPERATIONAL
-}
-
-// Notifications
-model Notification {
-  id              String    @id @default(cuid())
-  userId          String
-  message         String
-  type            NotificationType
-  readStatus      Boolean   @default(false)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  // Relations
-  user            User      @relation(fields: [userId], references: [id])
-}
-
-enum NotificationType {
-  INFO
-  WARNING
-  ACTION
-}
-
-// Audit Logs
-model AuditLog {
-  id            String    @id @default(cuid())
-  userId        String
-  action        String
-  actionType    ActionType
-  affectedTable String
-  details       Json?
-  createdAt     DateTime  @default(now())
-
-  // Relations
-  user          User      @relation(fields: [userId], references: [id])
-}
-
-enum ActionType {
-  SUBMIT
-  APPROVE
-  REJECT
-  EDIT
-  DELETE
+  leaveId           String?
+  locumShiftId      String?
+  incidentId        String?
+  operationId       String?
 }
 
 enum Status {
@@ -120,9 +179,43 @@ enum Status {
   CANCELLED
 }
 
-enum Priority {
-  LOW
-  MEDIUM
-  HIGH
-  URGENT
+// Notification System
+model Notification {
+  id                String   @id @default(cuid())
+  userId            String
+  message           String
+  read              Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  user              User     @relation(fields: [userId], references: [id])
+}
+
+// Audit Log System
+model AuditLog {
+  id                String   @id @default(cuid())
+  userId            String
+  action            String
+  timestamp         DateTime @default(now())
+  user              User     @relation(fields: [userId], references: [id])
+}
+
+// Incident Status Enum
+enum IncidentStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+// Request Status Enum
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// Approval Decision Enum
+enum ApprovalDecision {
+  APPROVED
+  REJECTED
+  PENDING
 }
