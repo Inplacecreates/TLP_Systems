@@ -28,7 +28,7 @@ async function main() {
             role: 'EMPLOYEE',
             department: 'General',
             status: 'ACTIVE',
-            contractType: 'PERMANENT',
+            contractType: 'CONTRACT',
         },
     });
 
