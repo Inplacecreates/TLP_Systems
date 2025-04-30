@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 
@@ -13,8 +14,8 @@ async function main() {
             lastName: 'User',
             role: 'ADMIN',
             department: 'Administration',
-            status: 'ACTIVE',
             contractType: 'PERMANENT',
+            leaveBalance: 30
         },
     });
 
@@ -27,8 +28,8 @@ async function main() {
             lastName: 'User',
             role: 'USER',
             department: 'General',
-            status: 'ACTIVE',
             contractType: 'PERMANENT',
+            leaveBalance: 30
         },
     });
 
