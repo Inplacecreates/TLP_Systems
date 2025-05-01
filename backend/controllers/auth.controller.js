@@ -7,25 +7,21 @@ const prisma = new PrismaClient();
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
+        console.log('Login attempt for:', email);
 
         // Find user by email
         const user = await prisma.user.findUnique({
-            where: { email },
-            select: {
-                id: true,
-                email: true,
-                password: true,
-                role: true,
-                status: true
-            }
+            where: { email }
         });
 
         if (!user) {
+            console.log('User not found:', email);
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
         // Verify password
         const isValidPassword = await bcrypt.compare(password, user.password);
+        console.log('Password validation:', isValidPassword);
         if (!isValidPassword) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
@@ -70,8 +66,12 @@ const getRedirectUrl = (role) => {
             return '/admin/dashboard';
         case 'SUPERVISOR':
             return '/supervisor/dashboard';
-        case 'USER':
+        case 'EMPLOYEE':
             return '/dashboard';
+        case 'FINANCE':
+            return '/finance/dashboard';
+        case 'HR':
+            return '/hr/dashboard';
         default:
             return '/dashboard';
     }
