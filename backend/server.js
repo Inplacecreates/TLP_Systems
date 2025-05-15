@@ -1,12 +1,20 @@
 import express from 'express';
 import routes from './routes/index.js';
 import config, { setupApp } from './config/index.js';
-import { setupSwagger } from './swagger/index.js';
+import { setupSwagger } from './swagger/setup.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
 // Setup app with middleware
 setupApp(app);
+
+// Serve static files from routes directory for Swagger to find JSDoc comments
+app.use('/routes', express.static(path.join(__dirname, 'routes')));
 
 // Setup Swagger documentation
 setupSwagger(app);
