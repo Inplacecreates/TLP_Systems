@@ -36,7 +36,10 @@
     "express-rate-limit": "^7.5.0",
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^7.0.3",
-    "redis": "^5.0.1"
+    "redis": "^5.0.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "yamljs": "^0.3.0"
   },
   "devDependencies": {
     "@prisma/client": "^6.6.0",
