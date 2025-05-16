@@ -3,7 +3,7 @@ import authRoutes from './v1/authRoutes.js';
 import employeeRoutes from './v1/employeeRoutes.js';
 // import operationRoutes from './v1/operationRoutes.js';
 // import incidentRoutes from './v1/incidentRoutes.js';
-import { testDatabaseConnection } from '../db/db.js';
+import { testDatabaseConnection } from '../db/index.js';
 
 const router = express.Router();
 
