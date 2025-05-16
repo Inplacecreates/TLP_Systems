@@ -1,4 +1,4 @@
-import { prisma } from '../db/db.js';
+import { prisma } from "../db/index.js";
 
 // Base controller with common CRUD operations
 export const baseController = {

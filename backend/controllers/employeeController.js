@@ -1,5 +1,5 @@
 import { baseController } from './baseController.js';
-import { prisma } from '../db/db.js';
+import { prisma } from "../db/index.js";
 
 // Get all employees with pagination and filters
 export const getEmployees = async (req, res) => {

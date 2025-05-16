@@ -1,5 +1,5 @@
 import { baseController } from './baseController.js';
-import { prisma } from '../db/db.js';
+import { prisma } from "../db/index.js";
 import bcrypt from 'bcryptjs';
 import { ROLES } from '../utils/rolePermissions.js';
 

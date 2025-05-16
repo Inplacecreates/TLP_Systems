@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { prisma } from '../db/db.js';
+import { prisma } from "../db/index.js";
 import config from '../config/index.js';
 
 export const login = async (req, res) => {

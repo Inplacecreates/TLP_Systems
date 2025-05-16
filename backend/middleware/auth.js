@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import config from '../config/index.js';
-import { prisma } from '../db/db.js';
+import { prisma } from "../db/index.js";
 import { hasPermission } from '../utils/rolePermissions.js';
 import { unauthorizedResponse, forbiddenResponse } from '../utils/responseHandler.js';
 
