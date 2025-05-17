@@ -351,8 +351,6 @@ import {
     getEmployees,
     getEmployeeById,
     updateEmployee,
-    submitLeaveRequest,
-    getMyLeaves,
     reportIncident,
     getMyIncidents,
     submitOperationRequest
@@ -367,10 +365,6 @@ router.use(authenticate);
 router.get('/', getEmployees);
 router.get('/:id', getEmployeeById);
 router.patch('/:id', updateEmployee);
-
-// Leave management
-router.post('/leave', submitLeaveRequest);
-router.get('/leaves', getMyLeaves);
 
 // Incident reporting
 router.post('/incident', reportIncident);

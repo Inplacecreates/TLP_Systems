@@ -255,3 +255,27 @@
  *       422:
  *         $ref: '#/components/responses/ValidationError'
  */
+
+import express from 'express';
+import { authenticate } from '../../middleware/auth.js';
+import {
+    submitLeaveRequest,
+    getMyLeaves,
+    updateLeaveRequest,
+    approveLeaveRequest,
+    rejectLeaveRequest
+} from '../../controllers/employeeController.js';
+
+const router = express.Router();
+
+// All routes require authentication
+router.use(authenticate);
+
+// Leave request routes
+router.get('/', getMyLeaves);
+router.post('/', submitLeaveRequest);
+router.patch('/:id', updateLeaveRequest);
+router.post('/:id/approve', approveLeaveRequest);
+router.post('/:id/reject', rejectLeaveRequest);
+
+export default router;

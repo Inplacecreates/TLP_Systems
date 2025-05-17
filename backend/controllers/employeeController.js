@@ -89,10 +89,19 @@ export const submitLeaveRequest = async (req, res) => {
         const { startDate, endDate, type, reason, additionalNotes } = req.body;
         const userId = req.user.id;
 
+        // Validate dates
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        if (end < start) {
+            return res.status(400).json({
+                message: "End date cannot be before start date"
+            });
+        }
+
         const leave = await baseController.create('Leave', {
             userId,
-            startDate: new Date(startDate),
-            endDate: new Date(endDate),
+            startDate: start,
+            endDate: end,
             type,
             reason,
             additionalNotes,
@@ -120,7 +129,7 @@ export const submitLeaveRequest = async (req, res) => {
             )
         ]);
 
-        res.status(201).json(leave);
+        res.status(201).json({ data: leave });
     } catch (error) {
         console.error('Submit leave request error:', error);
         res.status(500).json({ message: 'Error submitting leave request' });
@@ -155,7 +164,7 @@ export const getMyLeaves = async (req, res) => {
             );
         }
 
-        res.json(result);
+        res.json({ data: result });
     } catch (error) {
         console.error('Get leaves error:', error);
         res.status(500).json({ message: 'Error fetching leaves' });
@@ -261,5 +270,117 @@ export const submitOperationRequest = async (req, res) => {
     } catch (error) {
         console.error('Submit operation request error:', error);
         res.status(500).json({ message: 'Error submitting operation request' });
+    }
+};
+
+// Update leave request
+export const updateLeaveRequest = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { reason, additionalNotes } = req.body;
+        const userId = req.user.id;
+
+        // Check if leave exists and belongs to user
+        const leave = await baseController.findById('Leave', id);
+        if (!leave) {
+            return res.status(404).json({ message: 'Leave request not found' });
+        }
+        if (leave.userId !== userId) {
+            return res.status(403).json({ message: 'Not authorized to update this leave request' });
+        }
+        if (leave.status !== 'PENDING') {
+            return res.status(400).json({ message: 'Only pending leave requests can be updated' });
+        }
+
+        const updatedLeave = await baseController.update('Leave', id, {
+            reason,
+            additionalNotes,
+        });
+
+        res.json({ data: updatedLeave });
+    } catch (error) {
+        console.error('Update leave request error:', error);
+        res.status(500).json({ message: 'Error updating leave request' });
+    }
+};
+
+// Approve leave request
+export const approveLeaveRequest = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { comments } = req.body;
+        const userId = req.user.id;
+
+        // Check if user has permission to approve
+        if (req.user.role !== 'SUPERVISOR' && req.user.role !== 'HR') {
+            return res.status(403).json({ message: 'Not authorized to approve leave requests' });
+        }
+
+        const leave = await baseController.findById('Leave', id);
+        if (!leave) {
+            return res.status(404).json({ message: 'Leave request not found' });
+        }
+        if (leave.status !== 'PENDING') {
+            return res.status(400).json({ message: 'Only pending leave requests can be approved' });
+        }
+
+        const approvedLeave = await baseController.update('Leave', id, {
+            status: 'APPROVED',
+        });
+
+        // Create audit log
+        await baseController.createAuditLog(
+            userId,
+            'LEAVE_REQUEST_APPROVED',
+            { leaveId: id, comments }
+        );
+
+        res.json({ data: approvedLeave });
+    } catch (error) {
+        console.error('Approve leave request error:', error);
+        res.status(500).json({ message: 'Error approving leave request' });
+    }
+};
+
+// Reject leave request
+export const rejectLeaveRequest = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { reason } = req.body;
+        const userId = req.user.id;
+
+        // Check if user has permission to reject
+        if (req.user.role !== 'SUPERVISOR' && req.user.role !== 'HR') {
+            return res.status(403).json({ message: 'Not authorized to reject leave requests' });
+        }
+
+        // Require rejection reason
+        if (!reason) {
+            return res.status(400).json({ message: 'Rejection reason is required' });
+        }
+
+        const leave = await baseController.findById('Leave', id);
+        if (!leave) {
+            return res.status(404).json({ message: 'Leave request not found' });
+        }
+        if (leave.status !== 'PENDING') {
+            return res.status(400).json({ message: 'Only pending leave requests can be rejected' });
+        }
+
+        const rejectedLeave = await baseController.update('Leave', id, {
+            status: 'REJECTED',
+        });
+
+        // Create audit log
+        await baseController.createAuditLog(
+            userId,
+            'LEAVE_REQUEST_REJECTED',
+            { leaveId: id, reason }
+        );
+
+        res.json({ data: rejectedLeave });
+    } catch (error) {
+        console.error('Reject leave request error:', error);
+        res.status(500).json({ message: 'Error rejecting leave request' });
     }
 };

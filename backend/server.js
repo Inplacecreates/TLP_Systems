@@ -31,3 +31,5 @@ API Documentation is available at:
 - YAML Format: http://localhost:${config.app.port}/api-docs.yaml
     `);
 });
+
+export { app };
