@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+	"@prisma/client": "latest",
+	"date-fns": "latest"
+  },
+  "devDependencies": {
+	"prisma": "latest",
+	"@types/cors": "latest"
+  }
+}

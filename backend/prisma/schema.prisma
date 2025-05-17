@@ -15,7 +15,9 @@ generator client {
 enum LeaveType {
   ANNUAL
   SICK
-  EMERGENCY
+  COMPASSIONATE
+  MATERNITY
+  PATERNITY
   UNPAID
 }
 
@@ -39,6 +41,7 @@ model User {
   id          String     @id @default(uuid()) // Unique identifier
   name        String
   email       String     @unique
+  contact     String?    // Added: User's contact info (phone, etc.)
   role        Role       @relation(fields: [roleId], references: [id]) // Linked role
   roleId      String
   createdAt   DateTime   @default(now())  // Creation timestamp
@@ -47,6 +50,9 @@ model User {
   Incident    Incident[] // One-to-many relation to Incident
   Expense     Expense[]  // One-to-many relation to Expense
   AuditLog    AuditLog[] // One-to-many relation to Audit logs
+
+  @@index([roleId]) // Index for faster role-based queries
+  @@index([email])  // Redundant with @unique, but explicit for clarity
 }
 
 // Leave model to capture employee leave records
@@ -58,9 +64,13 @@ model Leave {
   startDate     DateTime
   endDate       DateTime
   status        String     // Approval status
-  statusHistory Json?      // Tracks status changes over time
+  statusHistory Json?      // Tracks status changes over time (event based tracking or history)
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([startDate, endDate])
 }
 
 // Incident model for reporting and tracking operational incidents
@@ -75,6 +85,10 @@ model Incident {
   statusHistory Json?            // Historical status tracking
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
+
+  @@index([reporterId])
+  @@index([category])
+  @@index([status])
 }
 
 // Expense model to track different types of expenditures
@@ -88,6 +102,10 @@ model Expense {
   budgetId    String?      // Linked budget (if any)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+
+  @@index([userId])
+  @@index([type])
+  @@index([date])
 }
 
 // AuditLog model for system action tracking and traceability
@@ -98,6 +116,9 @@ model AuditLog {
   action      String   // Description of action taken
   metadata    Json?    // Optional extra info (e.g. IP, context)
   createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
 }
 
 // Role model to control permissions and access rights
@@ -108,4 +129,6 @@ model Role {
   users       User[]     // Users under this role
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+
+  @@index([name])
 }
