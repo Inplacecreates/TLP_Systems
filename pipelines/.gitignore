@@ -1,0 +1,52 @@
+# Node.js related
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+package-lock.json
+yarn.lock
+.pnpm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Pipeline specific
+/tmp/
+/temp/
+/output/
+/data/processed/
+*.csv
+*.xlsx
+*.parquet
+*.avro
+*.dump
+
+# Logs
+logs/
+*.log
+
+# Cache
+.cache/
+.temp/
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# TypeScript
+*.tsbuildinfo
+dist/
+build/
+
+# Debug files
+*.debug
+*.backup

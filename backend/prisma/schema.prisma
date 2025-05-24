@@ -1,182 +1,56 @@
+// schema.prisma
+
+// Define database source and client generator
+
 generator client {
   provider = "prisma-client-js"
 }
 
+// Define the database connection
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-// User Management
-model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  password      String
-  firstName     String
-  lastName      String
-  phoneNumber   String?
-  role          Role      @default(EMPLOYEE)
-  department    String
-  status        UserStatus    @default(ACTIVE)
-  contractType  ContractType
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+// =====================
+// ENUMS (ordered first)
+// =====================
 
-  // Relations
-  leaves        Leave[]
-  locumShifts   LocumShift[]
-  incidents     Incident[]
-  operations    OperationRequest[]
-  approvals     Approval[] // Approvals given by this user
-  notifications Notification[]
-  auditLogs     AuditLog[]
-}
-
-// Role Enum
 enum Role {
   ADMIN
+  MANAGER
   EMPLOYEE
   FINANCE
   HR
-  SUPERVISOR
-}
-
-// User Status 
-enum UserStatus {
-  ACTIVE
-  INACTIVE
-}
-
-//Contract Type
-enum ContractType {
-  PERMANENT
-  CONTRACT
   LOCUM
 }
 
-// Leave Management
-model Leave {
-  id                String      @id @default(cuid())
-  userId            String
-  startDate         DateTime
-  endDate           DateTime
-  type              LeaveType
-  reason            String
-  additionalNotes   String?
-  status            Status      @default(PENDING)
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
+enum IncidentCategory {
+  IT
+  SECURITY
+  LOGISTICS
+  FACILITIES
+  HEALTH
+  HR
+  OTHER
+}
 
-  // Relations
-  user              User        @relation(fields: [userId], references: [id])
-  approvals         Approval[]
+enum ExpenseType {
+  TRAVEL
+  MEALS
+  ACCOMMODATION
+  SUPPLIES
+  OTHER
+  CAPEX
 }
 
 enum LeaveType {
   ANNUAL
   SICK
+  COMPASSIONATE
   MATERNITY
   PATERNITY
   UNPAID
-}
-
-// Locum Management
-model LocumShift {
-  id                String      @id @default(cuid())
-  userId            String
-  date              DateTime
-  hours             Float
-  rate              Float
-  status            Status      @default(PENDING)
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
-
-  // Relations
-  user              User        @relation(fields: [userId], references: [id])
-  invoice           Invoice?
-  approvals         Approval[]
-}
-
-model Invoice {
-  id                String      @id @default(cuid())
-  locumShiftId      String      @unique
-  amount            Float
-  status            Status      @default(PENDING)
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
-
-  // Relations
-  locumShift        LocumShift  @relation(fields: [locumShiftId], references: [id])
-}
-
-// Incident Reports
-model Incident {
-  id                String         @id @default(cuid())
-  userId            String
-  title             String
-  description       String
-  severity          Severity      @default(MEDIUM)
-  status            Status        @default(PENDING)
-  reportedAt        DateTime      @default(now())
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-
-  // Relations
-  user              User           @relation(fields: [userId], references: [id])
-  approvals         Approval[]
-}
-
-enum Severity {
-  LOW
-  MEDIUM
-  HIGH
-  CRITICAL
-}
-
-// Operation Requests
-model OperationRequest {
-  id                String        @id @default(cuid())
-  userId            String
-  requestType       String
-  description       String
-  priority          Priority      @default(MEDIUM)
-  status            Status        @default(PENDING)
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-
-  // Relations
-  user              User          @relation(fields: [userId], references: [id])
-  approvals         Approval[]
-}
-
-enum Priority {
-  LOW
-  MEDIUM
-  HIGH
-  URGENT
-}
-
-// Approval System
-model Approval {
-  id                String          @id @default(cuid())
-  approverId        String
-  status            Status          @default(PENDING)
-  comments          String?
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-
-  // Relations
-  approver          User            @relation(fields: [approverId], references: [id])
-  leave             Leave?          @relation(fields: [leaveId], references: [id])
-  locumShift        LocumShift?    @relation(fields: [locumShiftId], references: [id])
-  incident          Incident?       @relation(fields: [incidentId], references: [id])
-  operation         OperationRequest? @relation(fields: [operationId], references: [id])
-
-  // Optional relation fields
-  leaveId           String?
-  locumShiftId      String?
-  incidentId        String?
-  operationId       String?
 }
 
 enum Status {
@@ -187,25 +61,6 @@ enum Status {
   CANCELLED
 }
 
-// Notification System
-model Notification {
-  id                String   @id @default(cuid())
-  userId            String
-  message           String
-  read              Boolean  @default(false)
-  createdAt         DateTime @default(now())
-  user              User     @relation(fields: [userId], references: [id])
-}
-
-// Audit Log System
-model AuditLog {
-  id                String   @id @default(cuid())
-  userId            String
-  action            String
-  timestamp         DateTime @default(now())
-  user              User     @relation(fields: [userId], references: [id])
-}
-
 // Incident Status Enum
 enum IncidentStatus {
   OPEN
@@ -214,16 +69,428 @@ enum IncidentStatus {
   CLOSED
 }
 
-// Request Status Enum
-enum RequestStatus {
-  PENDING
-  APPROVED
-  REJECTED
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
 }
 
-// Approval Decision Enum
-enum ApprovalDecision {
-  APPROVED
-  REJECTED
-  PENDING
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum InvoiceType {
+  LOCUM_SHIFT
+  EXPENSE_REIMBURSEMENT
+  SERVICE_FEE
+  OVERTIME
+  CONSULTING
+  OTHER
+}
+
+enum FinanceCategory {
+  LEAVE_MANAGEMENT
+  PAYROLL
+  LOCUM_COSTS
+  OPERATIONAL_COSTS
+  INCIDENT_COSTS
+  EXPENSE_REIMBURSEMENT
+  OVERHEAD
+  EQUIPMENT
+  TRAINING
+  OTHER
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+  TRANSFER
+  REFUND
+  ADJUSTMENT
+}
+
+enum OperationRequestType {
+  PROCUREMENT
+  MAINTENANCE
+  IT_SUPPORT
+  HR_REQUEST
+  FACILITY_REQUEST
+  TRAINING
+  EQUIPMENT
+  OTHER
+}
+
+enum ApprovalLevel {
+  LINE_MANAGER
+  FINANCE_MANAGER
+  ADMIN
+  FINAL
+}
+
+enum ApprovalAction {
+  APPROVE
+  REJECT
+  REQUEST_CHANGES
+  DELEGATE
+  ESCALATE
+}
+
+// =====================
+// MODELS (ordered after enums)
+// =====================
+
+// Department Management
+model Department {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  managerId   String?   @unique // Head of department (line manager)
+  budgetCode  String?   // Budget allocation code
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  manager     User?     @relation("DepartmentManager", fields: [managerId], references: [id])
+  employees   User[]    @relation("DepartmentEmployees")
+  
+  @@index([name])
+  @@index([managerId])
+  @@index([budgetCode])
+}
+
+// User Management
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  contactNumber String
+  address       String
+  password      String
+  firstName     String
+  lastName      String
+  role          Role      @default(EMPLOYEE)
+  departmentId  String?   // Department this user belongs to
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  department    Department? @relation("DepartmentEmployees", fields: [departmentId], references: [id])
+  managedDepartment Department? @relation("DepartmentManager") // Department this user manages
+  leaves        Leave[]
+  locumShifts   LocumShift[]
+  incidents     Incident[]  // Incidents reported by this user
+  incidentsAssigned Incident[] @relation("IncidentAssignee") // Incidents assigned to this user
+  incidentsEscalated Incident[] @relation("IncidentEscalation") // Incidents escalated to this user
+  operations    OperationRequest[]
+  invoices      Invoice[]    // Invoices/reimbursements requested by this user
+  standInFor    Leave[]   @relation("StandIn") // Leaves where this user is the stand-in (LOCUM role)
+  financeRecords FinanceRecord[] @relation("FinanceUser") // Finance records associated with this user
+  
+  // Approval relations
+  approvalsGiven Approval[] @relation("ApprovalApprover") // Approvals this user has given
+  approvalsDelegated Approval[] @relation("ApprovalDelegation") // Approvals delegated to this user
+  
+  @@index([email])
+  @@index([role])
+  @@index([departmentId])
+  @@index([firstName, lastName])
+}
+
+// Leave Management
+model Leave {
+  id          String      @id @default(cuid())
+  userId      String
+  startDate   DateTime
+  endDate     DateTime
+  standInId   String?     // Optional field for stand-in user (must be LOCUM role)
+  type        LeaveType
+  status      Status      @default(PENDING)
+  statusHistory Json? // Store status history as JSON (To Be defined in better detail)
+  reason      String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  user        User        @relation(fields: [userId], references: [id])
+  approvals   Approval[]  // Leave approvals to be defined in better detail and link to status
+  standIn     User?       @relation("StandIn", fields: [standInId], references: [id])
+  locumShifts LocumShift[] @relation("LeaveLocumShifts") // Locum shifts covering this leave
+  financeRecords FinanceRecord[] @relation("FinanceLeave") // Finance records related to this leave
+  
+  @@index([userId, status])
+  @@index([startDate, endDate])
+  @@index([type, status])
+  @@index([standInId]) // For LOCUM shift queries
+  @@index([createdAt])
+ }
+
+// Locum Management
+model LocumShift {
+  id          String      @id @default(cuid())
+  userId      String      // LOCUM user performing the shift (same as standInId in Leave)
+  leaveId     String?     // Optional: Leave being covered by this shift
+  date        DateTime
+  hours       Float
+  rate        Float
+  status      Status      @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  user        User        @relation(fields: [userId], references: [id])
+  leave       Leave?      @relation("LeaveLocumShifts", fields: [leaveId], references: [id]) // Leave being covered
+  invoice     Invoice?
+  approvals   Approval[]
+  
+  @@index([userId, status])
+  @@index([date])
+  @@index([leaveId])
+  @@index([status, date])
+}
+
+model Invoice {
+  id            String      @id @default(cuid())
+  type          InvoiceType @default(LOCUM_SHIFT) // Type of invoice/reimbursement
+  requesterId   String      // User requesting the invoice/reimbursement
+  amount        Float
+  status        Status      @default(PENDING)
+  
+  // Optional locum shift details (when type = LOCUM_SHIFT)
+  locumShiftId  String?     @unique
+  
+  // General invoice details (applicable to all types)
+  serviceDate   DateTime?   // Date of service/work performed
+  hoursWorked   Float?      // Total hours worked (if applicable)
+  hourlyRate    Float?      // Rate per hour (if applicable)
+  description   String?     // Description of services rendered
+  attachments   Json?       // JSON array of attachment URLs/references
+  
+  // Leave-specific details (when type = LOCUM_SHIFT)
+  leaveType     LeaveType?  // Type of leave being covered
+  coveragePeriod String?    // Description of coverage period
+  
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Relations
+  requester     User        @relation(fields: [requesterId], references: [id])
+  locumShift    LocumShift? @relation(fields: [locumShiftId], references: [id])
+  approvals     Approval[]
+  financeRecords FinanceRecord[] @relation("FinanceInvoice") // Finance records related to this invoice
+  
+  @@index([requesterId, status])
+  @@index([type, status])
+  @@index([serviceDate])
+  @@index([amount])
+  @@index([createdAt])
+}
+
+// Finance Records
+model FinanceRecord {
+  id          String           @id @default(cuid())
+  type        TransactionType  // Income, Expense, Transfer, Refund, Adjustment
+  category    FinanceCategory  // Business area classification
+  amount      Float            // Transaction amount
+  description String           // Detailed description of transaction
+  date        DateTime         // Transaction date
+  status      Status           @default(PENDING)
+  
+  // Optional references to related entities
+  userId      String?          // User associated with transaction (if applicable)
+  leaveId     String?          // Leave record this transaction relates to
+  incidentId  String?          // Incident this transaction relates to
+  invoiceId   String?          // Invoice this transaction relates to
+  operationId String?          // Operation request this transaction relates to
+  
+  // Additional financial details
+  budgetCode  String?          // Budget/cost center code
+  taxAmount   Float?           // Tax amount (if applicable)
+  netAmount   Float?           // Net amount after tax
+  attachments Json?            // Supporting documents/receipts
+  
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  // Relations
+  user        User?            @relation("FinanceUser", fields: [userId], references: [id])
+  leave       Leave?           @relation("FinanceLeave", fields: [leaveId], references: [id])
+  incident    Incident?        @relation("FinanceIncident", fields: [incidentId], references: [id])
+  invoice     Invoice?         @relation("FinanceInvoice", fields: [invoiceId], references: [id])
+  operation   OperationRequest? @relation("FinanceOperation", fields: [operationId], references: [id])
+  approvals   Approval[]
+  
+  @@index([type, category])
+  @@index([status, date])
+  @@index([userId])
+  @@index([category, date])
+  @@index([amount])
+  @@index([budgetCode])
+  @@index([createdAt])
+}
+
+// Operation Requests
+model OperationRequest {
+  id          String              @id @default(cuid())
+  userId      String
+  type        OperationRequestType // Type of operational request
+  description String
+  priority    Priority            @default(MEDIUM)
+  status      Status              @default(PENDING)
+  
+  // Financial details
+  estimatedCost Float?             // Estimated cost for budgeting
+  justification String?            // Business justification
+  
+  // Approval workflow
+  requiresLineManager  Boolean     @default(true)  // Requires line manager approval
+  requiresFinance      Boolean     @default(false) // Requires finance manager approval
+  currentApprovalLevel ApprovalLevel @default(LINE_MANAGER) // Current approval stage
+  
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  // Relations
+  user        User                @relation(fields: [userId], references: [id])
+  approvals   Approval[]
+  financeRecords FinanceRecord[]  @relation("FinanceOperation") // Finance records related to this operation
+  
+  @@index([userId, status])
+  @@index([type, status])
+  @@index([priority, status])
+  @@index([currentApprovalLevel])
+  @@index([estimatedCost])
+  @@index([createdAt])
+}
+
+// Incident Reports
+model Incident {
+  id          String            @id @default(cuid())
+  userId      String            // User reporting the incident
+  title       String
+  description String
+  category    IncidentCategory  // Type of incident (IT, SECURITY, LOGISTICS, etc.)
+  severity    Severity          @default(MEDIUM)
+  priority    Priority          @default(MEDIUM)
+  status      Status            @default(PENDING)
+  
+  // Assignment and Resolution
+  assignedTo  String?           // User assigned to handle this incident (chosen by reporter)
+  assignedAt  DateTime?         // When the incident was assigned
+  resolvedAt  DateTime?         // When the incident was resolved
+  estimatedResolutionTime DateTime? // Expected resolution time
+  
+  // Location and impact details
+  location    String?           // Physical location or system affected
+  affectedSystems String[]      // List of systems/services affected
+  impactDescription String?     // Description of business impact
+  
+  // Service interruption details
+  serviceInterrupted Boolean   @default(false) // Whether this caused service interruption
+  interruptionStart DateTime? // When service interruption started
+  interruptionEnd   DateTime? // When service was restored
+  downtime         Int?       // Downtime in minutes
+  
+  // Resolution details
+  resolutionNotes  String?     // How the incident was resolved
+  preventiveMeasures String?   // Measures to prevent recurrence
+  rootCause       String?     // Root cause analysis
+  
+  // Financial impact
+  estimatedCost   Float?      // Estimated cost of incident/resolution
+  actualCost      Float?      // Actual cost incurred
+  
+  // Approval workflow
+  requiresApproval Boolean    @default(true)  // Whether this incident requires approval for resolution
+  currentApprovalLevel ApprovalLevel? // Current approval stage if applicable
+  
+  // Follow-up and tracking
+  followUpRequired Boolean    @default(false) // Whether follow-up actions are needed
+  followUpDate    DateTime?   // Date for follow-up
+  escalated       Boolean     @default(false) // Whether this was escalated
+  escalatedAt     DateTime?   // When escalation occurred
+  escalatedTo     String?     // User incident was escalated to
+  
+  // Additional context
+  attachments     Json?       // Supporting documents, screenshots, logs
+  relatedIncidents String[]   // IDs of related incidents
+  externalTicket  String?     // External ticket number (if using external system)
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  user            User        @relation(fields: [userId], references: [id])
+  assignee        User?       @relation("IncidentAssignee", fields: [assignedTo], references: [id])
+  escalatedToUser User?       @relation("IncidentEscalation", fields: [escalatedTo], references: [id])
+  approvals       Approval[]
+  financeRecords  FinanceRecord[] @relation("FinanceIncident") // Finance records related to this incident
+  
+  @@index([status, severity])
+  @@index([category, status])
+  @@index([userId])
+  @@index([assignedTo, status])
+  @@index([createdAt])
+  @@index([priority, severity]) // For urgency-based filtering
+  @@index([serviceInterrupted, status]) // For service interruption tracking
+}
+
+// Approval System
+model Approval {
+  id            String          @id @default(cuid())
+  approverId    String
+  approvalLevel ApprovalLevel   // Level of approval (LINE_MANAGER, FINANCE_MANAGER, etc.)
+  action        ApprovalAction? // Action taken (APPROVE, REJECT, etc.)
+  status        Status          @default(PENDING)
+  comments      String?         // Approval comments/feedback
+  rejectionReason String?       // Specific reason for rejection
+  approvedAt    DateTime?       // When the approval was given
+  isRequired    Boolean         @default(true) // Whether this approval is mandatory
+  order         Int             @default(1) // Order in approval chain
+  
+  // Delegation/escalation details
+  delegatedTo   String?         // User this approval was delegated to
+  escalatedFrom String?         // Original approver if escalated
+  delegationReason String?      // Reason for delegation
+  escalatedAt   DateTime?       // When escalation occurred
+  delegatedAt   DateTime?       // When delegation occurred
+  
+  // Approval thresholds and conditions
+  amountThreshold Decimal?      // Financial threshold for this approval
+  urgencyLevel  Priority?       // Urgency level affecting approval
+  
+  // Additional context
+  metadata      Json?           // Additional approval context (urgency, cost thresholds, etc.)
+  attachments   String[]        // Supporting documents/files
+  
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  // Relations
+  approver      User            @relation("ApprovalApprover", fields: [approverId], references: [id])
+  delegatedToUser User?         @relation("ApprovalDelegation", fields: [delegatedTo], references: [id])
+  
+  // Entity relations - these link approvals to specific items requiring approval
+  leave         Leave?          @relation(fields: [leaveId], references: [id])
+  locumShift    LocumShift?     @relation(fields: [locumShiftId], references: [id])
+  incident      Incident?       @relation(fields: [incidentId], references: [id])
+  operation     OperationRequest? @relation(fields: [operationId], references: [id])
+  finance       FinanceRecord?  @relation(fields: [financeId], references: [id])
+  invoice       Invoice?        @relation(fields: [invoiceId], references: [id])
+
+  // Optional relation fields
+  leaveId       String?
+  locumShiftId  String?
+  incidentId    String?
+  operationId   String?
+  financeId     String?
+  invoiceId     String?
+  
+  @@index([status, approvalLevel])
+  @@index([approverId, status])
+  @@index([createdAt])
+  @@index([approvalLevel, order]) // For approval chain processing
+  @@index([status, urgencyLevel]) // For priority-based filtering
 }
