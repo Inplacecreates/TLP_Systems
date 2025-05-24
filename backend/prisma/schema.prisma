@@ -29,6 +29,13 @@ enum IncidentCategory {
   OTHER
 }
 
+enum IncidentStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
 enum ExpenseType {
   CAPEX
   OPEX
