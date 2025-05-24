@@ -2,8 +2,8 @@ name: Pull Request CI
 
 on:
   pull_request:
-    branches: [main]
-    types: [opened, synchronize, reopened]
+    # branches: [main]
+    # types: [opened, synchronize, reopened]
 
 jobs:
   validate:
@@ -30,6 +30,22 @@ jobs:
           node-version: "22"
           cache: "npm"
 
+      - name: Cache Backend Dependencies
+        uses: actions/cache@v3
+        with:
+          path: backend/node_modules
+          key: ${{ runner.os }}-backend-${{ hashFiles('backend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-backend-
+
+      - name: Cache Frontend Dependencies
+        uses: actions/cache@v3
+        with:
+          path: frontend/node_modules
+          key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-frontend-
+
       - name: Install Backend Dependencies
         working-directory: ./backend
         run: npm ci
@@ -38,44 +54,76 @@ jobs:
         working-directory: ./frontend
         run: npm ci
 
-      - name: Verify Backend Lock File
+
+      - name: Setup Test Environment
         working-directory: ./backend
         run: |
-          if [ ! -f "package-lock.json" ]; then
-            echo "package-lock.json missing in backend directory."
-            exit 1
-          fi
-
-      - name: Verify Frontend Lock File
-        working-directory: ./frontend
-        run: |
-          if [ ! -f "package-lock.json" ]; then
-            echo "package-lock.json missing in frontend directory."
-            exit 1
-          fi
+          cp .env.example .env.test
+          npm run prisma generate
+          npm run test:setup
 
       - name: Run Backend Linting
         working-directory: ./backend
-        run: npm run lint
+        run: |
+          npm run lint
+          npm run format:check
 
       - name: Run Frontend Linting
         working-directory: ./frontend
-        run: npm run lint
+        run: |
+          npm run lint
+          npm run format:check
 
       - name: Run Backend Tests
         working-directory: ./backend
         env:
+          NODE_ENV: test
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tlp_systems_test
-        run: npm test
+          JWT_SECRET: test-jwt-secret
+          PORT: 3002
+          LOG_LEVEL: error
+        run: |
+          npm run test:coverage
+          npm run check:coverage
 
       - name: Run Frontend Tests
         working-directory: ./frontend
-        run: npm test
+        env:
+          NODE_ENV: test
+        run: |
+          npm run test:coverage
+          npm run check:coverage
+
+      - name: Upload Backend Coverage
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-coverage
+          path: backend/coverage
+
+      - name: Upload Frontend Coverage
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-coverage
+          path: frontend/coverage
 
       - name: Build Frontend
         working-directory: ./frontend
+        env:
+          NODE_ENV: production
         run: npm run build
 
       - name: Build Backend
         working-directory: ./backend
+        env:
+          NODE_ENV: production
         run: npm run build
+
+      - name: Check for TypeScript Errors
+        run: |
+          cd backend && npm run typecheck
+          cd ../frontend && npm run typecheck
+
+      - name: Check for Security Vulnerabilities
+        run: |
+          cd backend && npm audit
+          cd ../frontend && npm audit

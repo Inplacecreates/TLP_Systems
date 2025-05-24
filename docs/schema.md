@@ -7,6 +7,7 @@ This document outlines the **logical structure of the PostgreSQL database** used
 ## 🧱 Core Tables
 
 ### 1. `Employees`
+
 Stores all registered system users.
 
 | Column         | Type     | Description                         |
@@ -28,6 +29,7 @@ Stores all registered system users.
 ---
 
 ### 2. `Roles`
+
 Defines system roles with permissions.
 
 | Column      | Type    | Description           |
@@ -39,6 +41,7 @@ Defines system roles with permissions.
 ---
 
 ### 3. `LeaveRequests`
+
 Leave applications submitted by employees.
 
 | Column                     | Type     | Description                       |
@@ -58,6 +61,7 @@ Leave applications submitted by employees.
 ---
 
 ### 4. `Locums`
+
 Details of all locum workers used during staff absences.
 
 | Column         | Type     | Description                        |
@@ -77,6 +81,7 @@ Details of all locum workers used during staff absences.
 ---
 
 ### 5. `LocumCovers`
+
 Many-to-many relationship between leave requests and locums.
 
 | Column           | Type    | Description                       |
@@ -94,6 +99,7 @@ Many-to-many relationship between leave requests and locums.
 ---
 
 ### 6. `FinanceRecords`
+
 Approved invoices and operational costs tracked here.
 
 | Column        | Type     | Description                        |
@@ -111,6 +117,7 @@ Approved invoices and operational costs tracked here.
 ---
 
 ### 7. `OperationalRequests`
+
 Tracks resource/equipment requests.
 
 | Column             | Type     | Description                    |
@@ -130,6 +137,7 @@ Tracks resource/equipment requests.
 ---
 
 ### 8. `IncidentReports`
+
 Log and track workplace incidents.
 
 | Column         | Type     | Description                      |
@@ -145,6 +153,7 @@ Log and track workplace incidents.
 ---
 
 ### 9. `Approvals`
+
 Tracks multi-step approvals across modules.
 
 | Column         | Type     | Description                      |

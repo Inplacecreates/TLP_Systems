@@ -2,16 +2,28 @@
 
 // Define database source and client generator
 
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Define the database connection
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
+// =====================
+// ENUMS (ordered first)
+// =====================
+
+enum Role {
+  ADMIN
+  MANAGER
+  EMPLOYEE
+  FINANCE
+  HR
 }
 
-// Enums for business logic categories
 enum LeaveType {
   ANNUAL
   SICK
@@ -21,14 +33,15 @@ enum LeaveType {
   UNPAID
 }
 
-enum IncidentCategory {
-  SECURITY
-  HEALTH
-  HR
-  IT
-  OTHER
+enum Status {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+  CANCELLED
 }
 
+// Incident Status Enum
 enum IncidentStatus {
   OPEN
   IN_PROGRESS
@@ -36,106 +49,159 @@ enum IncidentStatus {
   CLOSED
 }
 
-enum ExpenseType {
-  CAPEX
-  OPEX
-  TRAVEL
-  SUPPLIES
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
 }
 
-// User model representing system users
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// =====================
+// MODELS (ordered after enums)
+// =====================
+
+// User Management
 model User {
-  id          String     @id @default(uuid()) // Unique identifier
-  name        String
-  email       String     @unique
-  contact     String?    // Added: User's contact info (phone, etc.)
-  role        Role       @relation(fields: [roleId], references: [id]) // Linked role
-  roleId      String
-  createdAt   DateTime   @default(now())  // Creation timestamp
-  updatedAt   DateTime   @updatedAt // Last update timestamp
-  Leave       Leave[]    // One-to-many relation to Leave
-  Incident    Incident[] // One-to-many relation to Incident
-  Expense     Expense[]  // One-to-many relation to Expense
-  AuditLog    AuditLog[] // One-to-many relation to Audit logs
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  firstName     String
+  lastName      String
+  role          Role      @default(EMPLOYEE)
+  department    String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  @@index([roleId]) // Index for faster role-based queries
-  @@index([email])  // Redundant with @unique, but explicit for clarity
+  // Relations
+  leaves        Leave[]
+  locumShifts   LocumShift[]
+  incidents     Incident[]
+  operations    OperationRequest[]
+  approvals     Approval[]
 }
 
-// Leave model to capture employee leave records
+// Leave Management
 model Leave {
-  id            String     @id @default(uuid())
-  user          User       @relation(fields: [userId], references: [id])
-  userId        String
-  type          LeaveType  // Type of leave
-  startDate     DateTime
-  endDate       DateTime
-  status        String     // Approval status
-  statusHistory Json?      // Tracks status changes over time (event based tracking or history)
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  id          String      @id @default(cuid())
+  userId      String
+  startDate   DateTime
+  endDate     DateTime
+  type        LeaveType
+  status      Status      @default(PENDING)
+  reason      String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
-  @@index([userId])
-  @@index([status])
-  @@index([startDate, endDate])
+  // Relations
+  user        User        @relation(fields: [userId], references: [id])
+  approvals   Approval[]
 }
 
-// Incident model for reporting and tracking operational incidents
+// Locum Management
+model LocumShift {
+  id          String      @id @default(cuid())
+  userId      String
+  date        DateTime
+  hours       Float
+  rate        Float
+  status      Status      @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  user        User        @relation(fields: [userId], references: [id])
+  invoice     Invoice?
+  approvals   Approval[]
+}
+
+model Invoice {
+  id            String      @id @default(cuid())
+  locumShiftId  String      @unique
+  amount        Float
+  status        Status      @default(PENDING)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Relations
+  locumShift    LocumShift  @relation(fields: [locumShiftId], references: [id])
+}
+
+// Finance Records
+model FinanceRecord {
+  id          String      @id @default(cuid())
+  type        String
+  amount      Float
+  category    String
+  description String
+  date        DateTime
+  status      Status      @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  approvals   Approval[]
+}
+
+// Operation Requests
+model OperationRequest {
+  id          String      @id @default(cuid())
+  userId      String
+  type        String
+  description String
+  priority    Priority    @default(MEDIUM)
+  status      Status      @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  user        User        @relation(fields: [userId], references: [id])
+  approvals   Approval[]
+}
+
+// Incident Reports
 model Incident {
-  id            String           @id @default(uuid())
-  reporter      User             @relation(fields: [reporterId], references: [id])
-  reporterId    String
-  category      IncidentCategory // Categorization of incident
-  description   String
-  status        String           // Current status
-  resolvedAt    DateTime?        // Timestamp for resolution
-  statusHistory Json?            // Historical status tracking
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-
-  @@index([reporterId])
-  @@index([category])
-  @@index([status])
-}
-
-// Expense model to track different types of expenditures
-model Expense {
-  id          String     @id @default(uuid())
-  user        User       @relation(fields: [userId], references: [id])
+  id          String      @id @default(cuid())
   userId      String
-  type        ExpenseType // Nature of expense
-  amount      Float        // Monetary value
-  date        DateTime     // When expense occurred
-  budgetId    String?      // Linked budget (if any)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  title       String
+  description String
+  severity    Severity    @default(MEDIUM)
+  status      Status      @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
-  @@index([userId])
-  @@index([type])
-  @@index([date])
+  // Relations
+  user        User        @relation(fields: [userId], references: [id])
+  approvals   Approval[]
 }
 
-// AuditLog model for system action tracking and traceability
-model AuditLog {
-  id          String   @id @default(uuid())
-  user        User     @relation(fields: [userId], references: [id])
-  userId      String
-  action      String   // Description of action taken
-  metadata    Json?    // Optional extra info (e.g. IP, context)
-  createdAt   DateTime @default(now())
+// Approval System
+model Approval {
+  id            String          @id @default(cuid())
+  approverId    String
+  status        Status          @default(PENDING)
+  comments      String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 
-  @@index([userId])
-  @@index([createdAt])
-}
+  // Relations
+  approver      User            @relation(fields: [approverId], references: [id])
+  leave         Leave?          @relation(fields: [leaveId], references: [id])
+  locumShift    LocumShift?    @relation(fields: [locumShiftId], references: [id])
+  incident      Incident?       @relation(fields: [incidentId], references: [id])
+  operation     OperationRequest? @relation(fields: [operationId], references: [id])
+  finance       FinanceRecord?  @relation(fields: [financeId], references: [id])
 
-// Role model to control permissions and access rights
-model Role {
-  id          String     @id @default(uuid())
-  name        String     @unique
-  permissions Json       // JSON blob of access rules
-  users       User[]     // Users under this role
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-
-  @@index([name])
+  // Optional relation fields
+  leaveId       String?
+  locumShiftId  String?
+  incidentId    String?
+  operationId   String?
+  financeId     String?
 }
