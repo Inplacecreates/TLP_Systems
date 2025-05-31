@@ -348,12 +348,12 @@
 import express from 'express';
 import { authenticate } from '../../middleware/auth.js';
 import {
-    getEmployees,
-    getEmployeeById,
-    updateEmployee,
-    reportIncident,
-    getMyIncidents,
-    submitOperationRequest
+  getEmployees,
+  getEmployeeById,
+  updateEmployee,
+  reportIncident,
+  getMyIncidents,
+  submitOperationRequest
 } from '../../controllers/employeeController.js';
 
 const router = express.Router();

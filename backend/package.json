@@ -1,4 +1,4 @@
- {
+{
   "name": "tlp-systems-backend",
   "version": "1.0.0",
   "type": "module",
@@ -12,10 +12,12 @@
     "test:coverage": "NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "test:ci": "NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --ci --coverage --reporters='default' --reporters='jest-junit'",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "db:setup": "npx prisma generate && npx prisma db push",
+    "seed": "node prisma/seed.js"
   },
   "dependencies": {
-    "@prisma/client": "^5.0.0",
+    "@prisma/client": "^6.8.2",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
@@ -39,7 +41,7 @@
     "jest-junit": "^16.0.0",
     "nodemon": "^3.0.1",
     "prettier": "^3.0.0",
-    "prisma": "^5.0.0",
+    "prisma": "^6.8.2",
     "supertest": "^6.3.3"
   },
   "engines": {
