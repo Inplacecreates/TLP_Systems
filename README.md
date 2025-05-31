@@ -144,7 +144,7 @@ The **TLP Systems App** streamlines critical business processes through an integ
    cd ../frontend
    npm install
    
-   # Pipelines (optional)
+   # Pipelines
    cd ../pipelines
    npm install
    ```
@@ -153,8 +153,8 @@ The **TLP Systems App** streamlines critical business processes through an integ
 
    ```bash
    cd ../backend
-   npm run prisma migrate dev
-   npm run prisma db seed
+   npm run db:setup
+   npm run seed
    ```
 
 5. **Start development servers**
