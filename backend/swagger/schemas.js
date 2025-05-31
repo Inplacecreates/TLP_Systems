@@ -1,21 +1,5 @@
 export const schemas = {
-  Error: {
-    type: 'object',
-    properties: {
-      success: {
-        type: 'boolean',
-        example: false
-      },
-      message: {
-        type: 'string',
-        example: 'Error description'
-      },
-      error: {
-        type: 'object',
-        nullable: true
-      }
-    }
-  },
+  // Note: Error schema is defined in common.js to avoid duplication
   LoginRequest: {
     type: 'object',
     required: ['email', 'password'],
@@ -32,33 +16,36 @@ export const schemas = {
       }
     }
   },
-  UserResponse: {
+  RegisterRequest: {
     type: 'object',
+    required: ['email', 'password', 'firstName', 'lastName', 'department'],
     properties: {
-      id: {
-        type: 'string',
-        example: 'clh12345'
-      },
       email: {
         type: 'string',
-        format: 'email'
+        format: 'email',
+        example: 'user@example.com'
+      },
+      password: {
+        type: 'string',
+        format: 'password',
+        example: 'yourPassword123'
       },
       firstName: {
-        type: 'string'
+        type: 'string',
+        example: 'John'
       },
       lastName: {
-        type: 'string'
+        type: 'string',
+        example: 'Doe'
+      },
+      department: {
+        type: 'string',
+        example: 'IT'
       },
       role: {
         type: 'string',
-        enum: ['ADMIN', 'EMPLOYEE', 'SUPERVISOR', 'HR', 'FINANCE']
-      },
-      department: {
-        type: 'string'
-      },
-      status: {
-        type: 'string',
-        enum: ['ACTIVE', 'INACTIVE']
+        enum: ['EMPLOYEE', 'SUPERVISOR', 'HR', 'FINANCE'],
+        example: 'EMPLOYEE'
       }
     }
   },
@@ -71,9 +58,9 @@ export const schemas = {
       },
       data: {
         type: 'object',
-        properties: {
+        example: {
           user: {
-            $ref: '#/components/schemas/UserResponse'
+            $ref: '#/components/schemas/User'
           },
           token: {
             type: 'string',

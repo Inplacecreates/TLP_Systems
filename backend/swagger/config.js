@@ -23,18 +23,18 @@ export const swaggerConfig = {
     },
     servers: [
       {
-        url: '/api/v1',
+        url: '/api',
         description: 'Development server'
       }
     ],
     tags: [
       {
         name: 'Admin',
-        description: 'Administrative endpoints for system management'
+        description: 'Administrative endpoints for system management including user management, system statistics, and audit logs'
       },
       {
-        name: 'Auth',
-        description: 'Authentication endpoints'
+        name: 'Authentication',
+        description: 'User authentication and authorization endpoints including login, registration, password management, and token handling'
       },
       {
         name: 'Employees',
@@ -42,7 +42,7 @@ export const swaggerConfig = {
       },
       {
         name: 'Leave',
-        description: 'Leave management endpoints'
+        description: 'Leave management endpoints including applications, approvals, and leave history'
       },
       {
         name: 'Incidents',

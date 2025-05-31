@@ -129,7 +129,7 @@
  * /v1/employee/leave:
  *   post:
  *     tags:
- *       - Leaves
+ *       - Leave
  *     summary: Submit leave request
  *     description: Submit a new leave request
  *     security:
@@ -174,7 +174,7 @@
  * /v1/employee/leaves:
  *   get:
  *     tags:
- *       - Leaves
+ *       - Leave
  *     summary: Get my leaves
  *     description: Get list of leave requests for the authenticated user
  *     security:

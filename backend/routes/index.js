@@ -2,8 +2,8 @@ import express from 'express';
 import authRoutes from './v1/authRoutes.js';
 import employeeRoutes from './v1/employeeRoutes.js';
 import leaveRoutes from './v1/leaveRoutes.js';
-import operationRoutes from './v1/operationRoutes.js';
-import incidentRoutes from './v1/incidentRoutes.js';
+// import operationRoutes from './v1/operationRoutes.js';
+// import incidentRoutes from './v1/incidentRoutes.js';
 import adminRoutes from './v1/adminRoutes.js';
 import { testDatabaseConnection } from '../db/index.js';
 

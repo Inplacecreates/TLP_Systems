@@ -1,11 +1,10 @@
 import { swaggerDocument } from './config.js';
 import { schemas } from './schemas.js';
-import { responses } from './responses.js';
 import swaggerUi from 'swagger-ui-express';
 
-// Merge schemas and responses into the main document
+// Merge schemas into the main document
+// Note: Responses are defined in common.js and auto-picked up by swagger-jsdoc
 swaggerDocument.components.schemas = schemas;
-swaggerDocument.components.responses = responses;
 
 export const swaggerConfig = {
   swaggerDefinition: swaggerDocument,

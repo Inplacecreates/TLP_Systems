@@ -11,17 +11,7 @@
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *               password:
- *                 type: string
- *                 format: password
+ *             $ref: '#/components/schemas/LoginRequest'
  *     responses:
  *       200:
  *         description: Login successful
@@ -73,87 +63,6 @@
  *       422:
  *         $ref: '#/components/responses/ValidationError'
  */
-
-import express from 'express';
-import { login, register, getProfile } from '../../controllers/authController.js';
-import { authenticate } from '../../middleware/auth.js';
-
-const router = express.Router();
-
-/**
- * @swagger
- * /v1/auth/login:
- *   post:
- *     summary: Login to the system
- *     tags: [Authentication]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/LoginRequest'
- *     responses:
- *       200:
- *         description: Login successful
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/LoginResponse'
- *       401:
- *         $ref: '#/components/responses/UnauthorizedError'
- *       500:
- *         description: Server error
- */
-router.post('/login', login);
-
-/**
- * @swagger
- * /v1/auth/register:
- *   post:
- *     summary: Register a new user
- *     tags: [Authentication]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *               - firstName
- *               - lastName
- *               - department
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *               password:
- *                 type: string
- *                 format: password
- *               firstName:
- *                 type: string
- *               lastName:
- *                 type: string
- *               department:
- *                 type: string
- *               role:
- *                 type: string
- *                 enum: [EMPLOYEE, SUPERVISOR, HR, FINANCE]
- *     responses:
- *       201:
- *         description: User created successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/LoginResponse'
- *       400:
- *         description: Invalid input
- *       409:
- *         description: User already exists
- */
-// router.post('/register', register);
-
 /**
  * @swagger
  * /v1/auth/profile:
@@ -170,8 +79,18 @@ router.post('/login', login);
  *             schema:
  *               $ref: '#/components/schemas/User'
  *       401:
- *         $ref: '#/components/responses/UnauthorizedError'
+ *         $ref: '#/components/responses/Unauthorized'
  */
+import express from 'express';
+import { login, register, getProfile } from '../../controllers/authController.js';
+import { authenticate } from '../../middleware/auth.js';
+
+const router = express.Router();
+
+router.post('/login', login);
+// router.post('/register', register);
+
+
 router.get('/profile', authenticate, getProfile);
 
 export default router;

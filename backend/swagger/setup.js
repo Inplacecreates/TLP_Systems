@@ -2,10 +2,23 @@ import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerConfig } from './config.js';
 import { swaggerUiOptions } from './uiOptions.js';
+import { schemas } from './schemas.js';
 
 export const setupSwagger = (app) => {
+  // Merge schemas into the config
+  const configWithSchemas = {
+    ...swaggerConfig,
+    definition: {
+      ...swaggerConfig.definition,
+      components: {
+        ...swaggerConfig.definition.components,
+        schemas: schemas
+      }
+    }
+  };
+
   // Generate swagger specification
-  const swaggerSpec = swaggerJsdoc(swaggerConfig);
+  const swaggerSpec = swaggerJsdoc(configWithSchemas);
 
   // Serve swagger docs
   app.use(
