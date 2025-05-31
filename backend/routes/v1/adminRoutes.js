@@ -555,12 +555,12 @@ import express from 'express';
 import { authenticate } from '../../middleware/auth.js';
 import { checkPermission } from '../../middleware/auth.js';
 import {
-    getSystemStats,
-    manageUsers,
-    createUser,
-    updateUser,
-    resetUserPassword,
-    getAuditLogs
+  getSystemStats,
+  manageUsers,
+  createUser,
+  updateUser,
+  resetUserPassword,
+  getAuditLogs
 } from '../../controllers/adminController.js';
 import { RESOURCES, PERMISSIONS } from '../../utils/rolePermissions.js';
 
